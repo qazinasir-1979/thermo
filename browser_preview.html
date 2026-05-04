@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThermoLab | Engineering Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0336dc;
+            --background: #fdfbff;
+            --on-background: #1b1b1f;
+            --outline-variant: #c7c5d0;
+        }
+        body {
+            font-family: "Google Sans", "Product Sans", "Outfit", "Inter", sans-serif;
+            background-color: var(--background);
+            color: var(--on-background);
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, .font-display { font-family: "Google Sans", "Product Sans", "Outfit", sans-serif; font-weight: 700; }
+        .font-mono-data { font-family: 'Space Grotesk', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--outline-variant);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-card:hover { transform: translateY(-6px); border-color: var(--primary); box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="bg-white border-b border-outline-variant flex justify-between items-center px-8 h-16 fixed top-0 w-full z-[100]">
+        <div class="flex items-center gap-8"><span class="text-xl font-black tracking-tighter text-primary uppercase font-display italic">ThermoLab</span></div>
+        <div class="flex items-center gap-6">
+            <a href="https://qazinasir.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-all group">
+                <span class="material-symbols-outlined text-[18px] group-hover:rotate-12 transition-transform">public</span>
+                Website
+            </a>
+            <a href="mailto:contact@qazinasir.com" class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-primary transition-all shadow-lg shadow-black/10">
+                <span class="material-symbols-outlined text-[18px]">mail</span>
+                Contact Me
+            </a>
+        </div>
+    </header>
+
+    <aside class="hidden md:flex flex-col w-72 bg-slate-50 border-r border-outline-variant fixed top-16 h-[calc(100vh-4rem)] p-6 space-y-8 z-40 overflow-y-auto">
+        <div class="space-y-2">
+            <button onclick="setTab('pure')" id="side-pure" class="w-full flex items-center gap-4 p-4 bg-blue-600 text-white rounded-[20px] shadow-2xl shadow-blue-600/40">
+                <span class="material-symbols-outlined text-[20px]">science</span>
+                <span class="text-[11px] font-bold uppercase tracking-[0.15em]">Pure Components</span>
+            </button>
+            <button onclick="setTab('mixture')" id="side-mixture" class="w-full flex items-center gap-4 p-4 text-slate-600 hover:bg-white hover:text-blue-600 rounded-[20px]">
+                <span class="material-symbols-outlined text-[20px]">gas_meter</span>
+                <span class="text-[11px] font-bold uppercase tracking-[0.15em]">Mixed Gas</span>
+            </button>
+        </div>
+
+        <div class="pt-6 border-t border-slate-200 space-y-6">
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Unit Controls</h3>
+            <div class="space-y-6">
+                <div class="space-y-3">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">Pressure</span>
+                    <div class="grid grid-cols-4 bg-slate-200/50 p-1.5 rounded-2xl" id="p-units">
+                        <button onclick="setPUnit('bara')" class="py-2 text-[10px] font-black uppercase rounded-xl bg-white shadow-md text-primary scale-105">bara</button>
+                        <button onclick="setPUnit('psia')" class="py-2 text-[10px] font-black uppercase rounded-xl text-slate-500">psia</button>
+                        <button onclick="setPUnit('kPa')" class="py-2 text-[10px] font-black uppercase rounded-xl text-slate-500">kPa</button>
+                        <button onclick="setPUnit('MPa')" class="py-2 text-[10px] font-black uppercase rounded-xl text-slate-500">MPa</button>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">Temperature</span>
+                    <div class="grid grid-cols-3 bg-slate-200/50 p-1.5 rounded-2xl" id="t-units">
+                        <button onclick="setTUnit('K')" class="py-2 text-[10px] font-black uppercase rounded-xl bg-white shadow-md text-primary scale-105">K</button>
+                        <button onclick="setTUnit('°C')" class="py-2 text-[10px] font-black uppercase rounded-xl text-slate-500">°C</button>
+                        <button onclick="setTUnit('°F')" class="py-2 text-[10px] font-black uppercase rounded-xl text-slate-500">°F</button>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">Density</span>
+                    <div class="grid grid-cols-2 bg-slate-200/50 p-1.5 rounded-2xl" id="d-units">
+                        <button onclick="setDUnit('kg/m³')" class="py-2 text-[10px] font-black uppercase rounded-xl bg-white shadow-md text-primary scale-105">kg/m³</button>
+                        <button onclick="setDUnit('lb/ft³')" class="py-2 text-[10px] font-black uppercase rounded-xl text-slate-500">lb/ft³</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="md:ml-72 pt-16 p-8 lg:p-12 flex-1">
+        <div id="main-view" class="max-w-7xl mx-auto space-y-12 animate-fade-in mt-24">
+            <div class="border-b border-slate-200 pb-12">
+                <h1 id="main-title" class="text-4xl font-black text-slate-900 uppercase font-display leading-normal">Pure Component Analysis</h1>
+            </div>
+
+            <div class="grid grid-cols-12 gap-10">
+                <div class="col-span-12 lg:col-span-4 space-y-8">
+                    <div class="glass-card p-8 rounded-[32px] bg-white shadow-xl">
+                        <div class="space-y-8">
+                            <div id="mixture-inputs" class="hidden space-y-5 p-6 bg-slate-50 rounded-[24px] border border-slate-200">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[18px] text-primary">biotech</span>
+                                        <label class="text-[10px] font-black text-primary uppercase">Mixture Composition</label>
+                                    </div>
+                                    <button onclick="normalize()" class="bg-blue-600 text-white px-3 py-1.5 rounded-xl text-[9px] font-black uppercase">Normalize</button>
+                                </div>
+                                <div id="comp-list" class="space-y-4"></div>
+                                <div class="pt-4 border-t border-slate-200 flex justify-between items-center">
+                                    <span class="text-[10px] font-black uppercase opacity-40">Total Fraction</span>
+                                    <span id="comp-sum" class="text-xs font-black px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-600">1.0000</span>
+                                </div>
+                            </div>
+                            <div id="component-select" class="space-y-3"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fluid</label><select id="component" onchange="update()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold shadow-sm outline-none"><option value="methane">Methane</option><option value="ethane">Ethane</option><option value="propane">Propane</option><option value="CO2">Carbon Dioxide</option><option value="nitrogen">Nitrogen</option></select></div>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="space-y-3"><label id="label-temp" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Temp</label><input id="temp" type="number" value="288.15" oninput="updateFromUI()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold font-mono-data"></div>
+                                <div class="space-y-3"><label id="label-press" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Max P</label><input id="maxP" type="number" value="350" oninput="updateFromUI()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold font-mono-data"></div>
+                            </div>
+                            <div class="space-y-4"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Equation of State</label><select id="eos-select" onchange="setEos(this.value)" class="w-full bg-white border-2 border-black rounded-2xl px-5 py-4 text-sm font-black shadow-sm outline-none">
+                                <optgroup label="Standard Models"><option value="srk">SRK</option><option value="pr">PR</option><option value="rk">RK Classic</option><option value="pr78">PR-1978</option></optgroup>
+                                <optgroup label="Advanced Models"><option value="pr-mc">Mathias-Copeman</option><option value="pr-tc">Twu-Coon</option></optgroup>
+                                <optgroup label="Molecular-Based"><option value="pc-saft">PC-SAFT</option><option value="cpa-srk">CPA-SRK</option></optgroup>
+                            </select></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-12 lg:col-span-8 space-y-10">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="glass-card p-8 rounded-[32px] border-t-4 border-blue-600 bg-white"><span class="text-[10px] font-black text-slate-400 uppercase block mb-4">Real Density</span><div class="flex items-baseline gap-2"><span id="stat-real" class="text-4xl font-black text-blue-600">0.00</span><span id="stat-dunit" class="text-[10px] font-black text-slate-400 uppercase">kg/m³</span></div></div>
+                        <div class="glass-card p-8 rounded-[32px] border-t-4 border-emerald-600 bg-white"><span class="text-[10px] font-black text-slate-400 uppercase block mb-4">Z-Factor</span><div class="flex items-baseline gap-2"><span id="stat-z" class="text-4xl font-black text-emerald-600">1.000</span></div></div>
+                        <div class="glass-card p-8 rounded-[32px] border-t-4 border-amber-600 bg-white"><span class="text-[10px] font-black text-slate-400 uppercase block mb-4">Ideal Ref</span><div class="flex items-baseline gap-2"><span id="stat-ideal" class="text-4xl font-black text-amber-600">0.00</span><span id="stat-dunit-ideal" class="text-[10px] font-black text-slate-400 uppercase">kg/m³</span></div></div>
+                    </div>
+                    <div class="glass-card p-10 rounded-[40px] bg-white shadow-xl space-y-16">
+                        <div class="h-[350px]"><canvas id="densityChart"></canvas></div>
+                        <div class="h-[350px] pt-8 border-t border-slate-100"><canvas id="zChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const R = 8.314462618;
+        const COMPONENTS = {
+            methane: { tc: 190.56, pc: 45.99e5, omega: 0.0115, mw: 16.043, mc: [0.5857, -0.7206, 1.2899], tc_params: [0.1228, 0.9145, 2.742], saft: { m: 1.0, sigma: 3.7039, eps_k: 150.03 } },
+            ethane: { tc: 305.32, pc: 48.72e5, omega: 0.0995, mw: 30.07, mc: [0.6548, -0.1844, 0.2602], tc_params: [0.2996, 0.8766, 1.679], saft: { m: 1.6069, sigma: 3.5206, eps_k: 191.42 } },
+            propane: { tc: 369.83, pc: 42.48e5, omega: 0.152, mw: 44.096, mc: [0.69, -0.15, 0.2], tc_params: [0.3, 0.85, 1.5], saft: { m: 2.002, sigma: 3.618, eps_k: 208.11 } },
+            CO2: { tc: 304.13, pc: 73.75e5, omega: 0.224, mw: 44.01, mc: [0.70, -0.10, 0.1], tc_params: [0.35, 0.8, 1.2], saft: { m: 2.073, sigma: 2.785, eps_k: 169.21 } },
+            nitrogen: { tc: 126.19, pc: 33.98e5, omega: 0.037, mw: 28.013, mc: [0.5743, -0.3226, 0.5907], tc_params: [0.1126, 0.9022, 2.875], saft: { m: 1.205, sigma: 3.313, eps_k: 90.96 } }
+        };
+
+        let currentMode = 'pure', currentEos = 'srk', pUnit = 'bara', tUnit = 'K', dUnit = 'kg/m³';
+        let composition = { methane: 0.858, ethane: 0.07, propane: 0.034, CO2: 0.026, nitrogen: 0.012 };
+        let temperatureK = 288.15, maxPressureBara = 350.0;
+
+        const solveCubic = (a, b, c) => {
+            const Q = (a * a - 3 * b) / 9, R_val = (2 * a * a * a - 9 * a * b + 27 * c) / 54;
+            if (R_val * R_val < Q * Q * Q) {
+                const theta = Math.acos(R_val / Math.sqrt(Q * Q * Q)), sqrtQ = Math.sqrt(Q);
+                return Math.max(-2 * sqrtQ * Math.cos(theta / 3) - a / 3, -2 * sqrtQ * Math.cos((theta + 2 * Math.PI) / 3) - a / 3, -2 * sqrtQ * Math.cos((theta - 2 * Math.PI) / 3) - a / 3);
+            }
+            const A = -Math.sign(R_val) * Math.pow(Math.abs(R_val) + Math.sqrt(R_val * R_val - Q * Q * Q), 1/3);
+            return (A + (A !== 0 ? Q / A : 0)) - a / 3;
+        };
+
+        function calculateMixture(p, t, compSource, eos) {
+            const pPa = p * 1e5;
+            let amix = 0, bmix = 0, mwMix = 0; const params = [];
+            if (eos === 'pc-saft') {
+                let z = 1.0, mw = 0;
+                for (const [n, f] of Object.entries(compSource)) {
+                    const c = COMPONENTS[n]; if (!c) continue;
+                    z += f * (-0.5 * c.saft.m * (c.saft.eps_k / t) * (pPa / 1e8));
+                    mw += f * c.mw;
+                }
+                return { real: (pPa * mw / 1000) / (z * R * t), ideal: (pPa * mw / 1000) / (R * t), z };
+            }
+            const isPR = eos.startsWith('pr'); const a_c = isPR ? 0.45724 : 0.42748, b_c = isPR ? 0.0778 : 0.0866;
+            for (const [n, f] of Object.entries(compSource)) {
+                const c = COMPONENTS[n]; if (!c) continue; const tr = t / c.tc; let alpha;
+                if (eos.endsWith('-mc')) { const m = 1 - Math.sqrt(tr); alpha = Math.pow(1 + c.mc[0]*m + c.mc[1]*m*m + c.mc[2]*m*m*m, 2); }
+                else if (eos.endsWith('-tc')) { alpha = Math.pow(tr, c.tc_params[2]*(c.tc_params[1]-1)) * Math.exp(c.tc_params[0]*(1-Math.pow(tr, c.tc_params[2]*c.tc_params[1]))); }
+                else if (eos === 'rk') { alpha = 1.0 / Math.sqrt(tr); }
+                else { const k = isPR ? (0.37464 + 1.54226*c.omega - 0.26992*c.omega**2) : (0.48 + 1.574*c.omega - 0.176*c.omega**2); alpha = Math.pow(1 + k*(1 - Math.sqrt(tr)), 2); }
+                const ai = a_c * Math.pow(R * c.tc, 2) * alpha / c.pc, bi = b_c * R * c.tc / c.pc;
+                params.push({ ai, bi, f }); bmix += f * bi; mwMix += f * c.mw;
+            }
+            for (let i = 0; i < params.length; i++) for (let j = 0; j < params.length; j++) amix += params[i].f * params[j].f * Math.sqrt(params[i].ai * params[j].ai);
+            const A = amix * pPa / (R * t)**2, B = bmix * pPa / (R * t);
+            let c2, c1, c0; if (isPR) { c2 = -(1-B); c1 = A-2*B-3*B*B; c0 = -(A*B-B*B-B*B*B); } else { c2 = -1; c1 = A-B-B*B; c0 = -(A*B); }
+            const z = solveCubic(c2, c1, c0);
+            return { real: (pPa * mwMix / 1000) / (z * R * t), ideal: (pPa * mwMix / 1000) / (R * t), z };
+        }
+
+        const toK = v => tUnit === '°C' ? v + 273.15 : (tUnit === '°F' ? (v-32)*5/9 + 273.15 : v);
+        const toBara = v => pUnit === 'psia' ? v/14.5038 : (pUnit === 'kPa' ? v/100 : (pUnit === 'MPa' ? v*10 : v));
+        const fromK = v => tUnit === '°C' ? v - 273.15 : (tUnit === '°F' ? (v-273.15)*9/5 + 32 : v);
+        const fromBara = v => pUnit === 'psia' ? v*14.5038 : (pUnit === 'kPa' ? v*100 : (pUnit === 'MPa' ? v/10 : v));
+        const fromDensity = v => dUnit === 'lb/ft³' ? v * 0.062428 : v;
+
+        let dChart, zChart;
+        function update() {
+            const compSource = currentMode === 'mixture' ? composition : { [document.getElementById('component').value]: 1.0 };
+            const labels = [], dData = [], zData = [];
+            for (let p = 0.1; p <= maxPressureBara; p += maxPressureBara/40) {
+                const res = calculateMixture(p, temperatureK, compSource, currentEos);
+                labels.push(fromBara(p).toFixed(1)); 
+                dData.push(fromDensity(res.real).toFixed(2));
+                zData.push(res.z.toFixed(4));
+            }
+            const f = calculateMixture(maxPressureBara, temperatureK, compSource, currentEos);
+            document.getElementById('stat-real').innerText = fromDensity(f.real).toFixed(2);
+            document.getElementById('stat-z').innerText = f.z.toFixed(4);
+            document.getElementById('stat-ideal').innerText = fromDensity(f.ideal).toFixed(2);
+            document.querySelectorAll('[id^="stat-dunit"]').forEach(el => el.innerText = dUnit);
+
+            const opt = (l, color) => ({ responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: `Pressure (${pUnit})`, color: '#000', font: { weight: '800' } }, ticks: { color: '#000', font: { weight: 'bold' } } }, y: { title: { display: true, text: l, color: '#000', font: { weight: '800' } }, ticks: { color: '#000', font: { weight: 'bold' } } } }, plugins: { legend: { display: false } } });
+            
+            if (dChart) dChart.destroy();
+            dChart = new Chart(document.getElementById('densityChart'), { type: 'line', data: { labels, datasets: [{ data: dData, borderColor: '#0336dc', borderWidth: 4, fill: true, backgroundColor: 'rgba(3, 54, 220, 0.05)', pointRadius: 0 }] }, options: opt(`Density (${dUnit})`) });
+
+            if (zChart) zChart.destroy();
+            zChart = new Chart(document.getElementById('zChart'), { type: 'line', data: { labels, datasets: [{ data: zData, borderColor: '#059669', borderWidth: 4, fill: true, backgroundColor: 'rgba(5, 150, 105, 0.05)', pointRadius: 0 }] }, options: opt('Z-Factor') });
+        }
+
+        function setPUnit(u) { 
+            pUnit = u; 
+            document.querySelectorAll('#p-units button').forEach(b => {
+                b.className = b.innerText === u 
+                    ? 'py-2 text-[10px] font-black uppercase rounded-xl bg-white shadow-md text-primary scale-105' 
+                    : 'py-2 text-[10px] font-black uppercase rounded-xl text-slate-500 hover:text-slate-700';
+            }); 
+            updateUIValues(); update(); 
+        }
+        function setTUnit(u) { 
+            tUnit = u; 
+            document.querySelectorAll('#t-units button').forEach(b => {
+                b.className = b.innerText === u 
+                    ? 'py-2 text-[10px] font-black uppercase rounded-xl bg-white shadow-md text-primary scale-105' 
+                    : 'py-2 text-[10px] font-black uppercase rounded-xl text-slate-500 hover:text-slate-700';
+            }); 
+            updateUIValues(); update(); 
+        }
+        function setDUnit(u) { 
+            dUnit = u; 
+            document.querySelectorAll('#d-units button').forEach(b => {
+                b.className = b.innerText === u 
+                    ? 'py-2 text-[10px] font-black uppercase rounded-xl bg-white shadow-md text-primary scale-105' 
+                    : 'py-2 text-[10px] font-black uppercase rounded-xl text-slate-500 hover:text-slate-700';
+            }); 
+            update(); 
+        }
+        
+        function updateUIValues() { document.getElementById('temp').value = fromK(temperatureK).toFixed(2); document.getElementById('maxP').value = fromBara(maxPressureBara).toFixed(2); }
+        function updateFromUI() { temperatureK = toK(parseFloat(document.getElementById('temp').value) || 288.15); maxPressureBara = toBara(parseFloat(document.getElementById('maxP').value) || 350); update(); }
+        function setEos(v) { currentEos = v; update(); }
+        
+        function buildCompList() {
+            const list = document.getElementById('comp-list');
+            list.innerHTML = '';
+            let sum = 0;
+            Object.keys(composition).forEach(k => {
+                sum += composition[k];
+                list.innerHTML += `
+                    <div class="flex justify-between items-center group">
+                        <span class="text-[11px] font-black capitalize text-slate-500 group-hover:text-primary transition-colors">${k}</span>
+                        <input type="number" step="0.001" value="${composition[k]}" 
+                            oninput="updateComp('${k}', this.value)" 
+                            class="w-24 text-right font-mono-data text-xs bg-white border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-primary transition-all">
+                    </div>`;
+            });
+            updateSumDisplay(sum);
+        }
+        function updateSumDisplay(sum) {
+            const el = document.getElementById('comp-sum');
+            el.innerText = sum.toFixed(4);
+            el.className = `text-xs font-black px-2 py-1 rounded-lg ${Math.abs(sum - 1) > 0.001 ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-600'}`;
+        }
+        function updateComp(key, val) { 
+            composition[key] = parseFloat(val) || 0; 
+            let sum = Object.values(composition).reduce((a, b) => a + b, 0);
+            updateSumDisplay(sum);
+            update(); 
+        }
+        function normalize() {
+            let sum = Object.values(composition).reduce((a, b) => a + b, 0);
+            if (sum === 0) return;
+            Object.keys(composition).forEach(k => { composition[k] = parseFloat((composition[k] / sum).toFixed(5)); });
+            buildCompList(); 
+            update();
+        }
+
+        function setTab(t) { 
+            currentMode = t; 
+            document.getElementById('mixture-inputs').classList.toggle('hidden', t!=='mixture'); 
+            document.getElementById('component-select').classList.toggle('hidden', t==='mixture'); 
+            document.getElementById('main-title').innerText = t === 'pure' ? 'Pure Component Analysis' : 'Mixed Gas Analysis';
+            
+            // Dynamic Button Update
+            ['pure', 'mixture'].forEach(id => {
+                const btn = document.getElementById('side-' + id);
+                if (id === t) {
+                    btn.className = 'w-full flex items-center gap-4 p-4 bg-blue-600 text-white rounded-[22px] shadow-2xl shadow-blue-600/40 scale-[1.03] translate-x-2 transition-all duration-500';
+                } else {
+                    btn.className = 'w-full flex items-center gap-4 p-4 text-slate-500 hover:bg-white hover:text-blue-600 rounded-[22px] transition-all duration-500 hover:translate-x-1';
+                }
+            });
+
+            if (t === 'mixture') buildCompList();
+            update(); 
+        }
+        
+        window.onload = () => { updateUIValues(); update(); };
+    </script>
+</body>
+</html>

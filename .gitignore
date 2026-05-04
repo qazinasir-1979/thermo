@@ -1,0 +1,6 @@
+node_modules
+dist
+.DS_Store
+*.zip
+Java 9 Files
+stitch_compressibility_and_density_calculator
