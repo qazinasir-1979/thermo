@@ -220,7 +220,24 @@
             document.getElementById('stat-ideal').innerText = fromDensity(f.ideal).toFixed(2);
             document.querySelectorAll('[id^="stat-dunit"]').forEach(el => el.innerText = dUnit);
 
-            const opt = (l, color) => ({ responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: `Pressure (${pUnit})`, color: '#000', font: { weight: '800' } }, ticks: { color: '#000', font: { weight: 'bold' } } }, y: { title: { display: true, text: l, color: '#000', font: { weight: '800' } }, ticks: { color: '#000', font: { weight: 'bold' } } } }, plugins: { legend: { display: false } } });
+            const opt = (l, color) => ({ 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                layout: { padding: { bottom: 20 } },
+                scales: { 
+                    x: { 
+                        title: { display: true, text: `Pressure (${pUnit})`, color: '#64748b', font: { size: 11, weight: '800' } }, 
+                        ticks: { color: '#94a3b8', font: { size: 10, weight: 'bold' } },
+                        grid: { display: false }
+                    }, 
+                    y: { 
+                        title: { display: true, text: l, color: '#64748b', font: { size: 11, weight: '800' } }, 
+                        ticks: { color: '#94a3b8', font: { size: 10, weight: 'bold' } },
+                        grid: { color: '#f1f5f9' }
+                    } 
+                }, 
+                plugins: { legend: { display: false } } 
+            });
             
             if (dChart) dChart.destroy();
             dChart = new Chart(document.getElementById('densityChart'), { type: 'line', data: { labels, datasets: [{ data: dData, borderColor: '#0336dc', borderWidth: 4, fill: true, backgroundColor: 'rgba(3, 54, 220, 0.05)', pointRadius: 0 }] }, options: opt(`Density (${dUnit})`) });

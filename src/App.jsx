@@ -334,7 +334,7 @@ const App = () => {
                         </div>
                     </div>
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={data}>
+                      <AreaChart data={data} margin={{ bottom: 20 }}>
                         <defs>
                           <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2}/>
@@ -342,7 +342,7 @@ const App = () => {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                        <XAxis dataKey="pressure" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} label={{ value: `Pressure (${pUnit})`, position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 11, fontWeight: 700 }} />
+                        <XAxis dataKey="pressure" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} label={{ value: `Pressure (${pUnit})`, position: 'insideBottom', offset: -5, fill: '#64748b', fontSize: 11, fontWeight: 700 }} />
                         <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} label={{ value: `Density (${dUnit})`, angle: -90, position: 'insideLeft', offset: 10, fill: '#64748b', fontSize: 11, fontWeight: 700 }} />
                         <Tooltip cursor={{ stroke: 'var(--primary)', strokeWidth: 1 }} contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', border: 'none', borderRadius: '24px', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', color: '#000', fontSize: '12px', fontWeight: '800', padding: '16px' }} />
                         <Area type="monotone" dataKey="real" stroke="var(--primary)" strokeWidth={5} fill="url(#chartGradient)" />
@@ -354,9 +354,9 @@ const App = () => {
                   <div className="h-[300px] w-full pt-12 border-t border-slate-100">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-10">Compressibility Factor (Z)</h3>
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={data}>
+                      <LineChart data={data} margin={{ bottom: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                        <XAxis dataKey="pressure" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                        <XAxis dataKey="pressure" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} label={{ value: `Pressure (${pUnit})`, position: 'insideBottom', offset: -5, fill: '#64748b', fontSize: 11, fontWeight: 700 }} />
                         <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
                         <Tooltip cursor={{ stroke: '#059669', strokeWidth: 1 }} contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', border: 'none', borderRadius: '24px', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', padding: '16px' }} />
                         <Line type="monotone" dataKey="z" stroke="#059669" strokeWidth={5} dot={false} animationDuration={2000} />
