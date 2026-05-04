@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area 
 } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
 import { COMPONENTS, calculateMixtureProperties } from './thermo';
 
 // --- Sub-Components ---
@@ -15,41 +16,46 @@ const SidebarItem = ({ icon, label, active = false, onClick }) => (
         : 'text-slate-500 hover:text-primary hover:bg-primary/5 hover:translate-x-1'
     }`}
   >
-    {active && <div className="absolute left-0 top-0 w-1 h-full bg-white/30 rounded-full" />}
+    {active && <div className="absolute left-0 top-0 w-1.5 h-full bg-white/30 rounded-full" />}
     <span className={`material-symbols-outlined text-[22px] transition-transform duration-500 ${active ? 'rotate-[360deg]' : 'group-hover:rotate-12'}`}>{icon}</span>
     <span className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all ${active ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`}>{label}</span>
   </button>
 );
 
-const StatCard = ({ label, value, unit, colorClass, delay = 0 }) => (
-  <div 
-    className={`glass-card p-7 bg-white rounded-3xl border-t-4 ${colorClass} animate-fade-in`}
-    style={{ animationDelay: `${delay}ms` }}
+const StatCard = ({ label, value, unit, colorClass, icon, delay = 0 }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+    className={`glass-card p-8 rounded-[32px] border-t-4 ${colorClass} relative overflow-hidden group`}
   >
-    <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">{label}</span>
-    <div className="flex items-baseline gap-2">
-      <div className={`text-4xl font-black tracking-tighter ${colorClass.replace('border-t-', 'text-')}`}>{value}</div>
-      {unit && <div className="text-[10px] font-black text-on-surface-variant uppercase">{unit}</div>}
+    <div className="absolute -right-4 -top-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+        <span className="material-symbols-outlined text-[120px]">{icon}</span>
     </div>
-  </div>
+    <div className="flex items-center gap-3 mb-6">
+        <span className={`material-symbols-outlined text-[20px] ${colorClass.replace('border-t-', 'text-')}`}>{icon}</span>
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{label}</span>
+    </div>
+    <div className="flex items-baseline gap-2">
+      <div className={`text-5xl font-black tracking-tighter font-mono-data ${colorClass.replace('border-t-', 'text-')}`}>{value}</div>
+      {unit && <div className="text-[11px] font-black text-slate-400 uppercase">{unit}</div>}
+    </div>
+  </motion.div>
 );
 
 // --- Main App ---
 
 const App = () => {
-  // Navigation State
   const [activeModule, setActiveModule] = useState('pure');
   const [pUnit, setPUnit] = useState('bara');
   const [tUnit, setTUnit] = useState('K');
   const [dUnit, setDUnit] = useState('kg/m³');
   
-  // Thermodynamic State
   const [component, setComponent] = useState('methane');
   const [temperature, setTemperature] = useState(288.15); 
   const [maxPressure, setMaxPressure] = useState(350.0);
   const [eos, setEos] = useState('srk');
   
-  // Natural Gas Composition State
   const [composition, setComposition] = useState({
     methane: 0.858,
     ethane: 0.07,
@@ -70,7 +76,6 @@ const App = () => {
     setComposition({...normalized}); 
   };
 
-  // Unit Conversion Helpers
   const convertP = (v) => {
     if (pUnit === 'psia') return v * 14.5038;
     if (pUnit === 'kPa') return v * 100;
@@ -96,7 +101,6 @@ const App = () => {
     return v;
   };
 
-  // Derived Simulation Data
   const data = useMemo(() => {
     const list = [];
     const maxBara = toBara(maxPressure);
@@ -117,34 +121,42 @@ const App = () => {
   const current = data[data.length - 1] || {};
 
   return (
-    <div className="flex min-h-screen bg-surface">
-      <header className="bg-white border-b border-outline-variant flex justify-between items-center px-8 h-16 fixed top-0 w-full z-[100]">
-        <div className="flex items-center gap-10">
-          <span className="text-xl font-black tracking-tight text-primary uppercase font-display italic">ThermoLab</span>
+    <div className="flex min-h-screen bg-[#fdfbff]">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 flex justify-between items-center px-10 h-20 fixed top-0 w-full z-[100]">
+        <div className="flex items-center gap-12">
+          <span className="text-2xl font-black tracking-tighter text-primary uppercase font-display italic">ThermoLab</span>
+          <div className="hidden md:flex items-center gap-3 px-4 py-1.5 bg-slate-100 rounded-full">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">System Ready</span>
+          </div>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           <a href="https://qazinasir.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-all group">
             <span className="material-symbols-outlined text-[18px] group-hover:rotate-12 transition-transform">public</span>
-            Website
+            Portfolio
           </a>
-          <a href="mailto:contact@qazinasir.com" className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-primary transition-all shadow-lg shadow-black/10">
-            <span className="material-symbols-outlined text-[18px]">mail</span>
-            Contact Me
+          <a href="mailto:contact@qazinasir.com" className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-[18px] text-[11px] font-black uppercase tracking-widest hover:bg-primary transition-all shadow-xl shadow-black/10">
+            <span className="material-symbols-outlined text-[18px]">contact_mail</span>
+            Contact
           </a>
         </div>
       </header>
 
-      <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-outline-variant/30 fixed top-16 h-[calc(100vh-4rem)] z-40">
-        <nav className="flex-1 px-4 mt-10 space-y-6">
-          <div className="space-y-2">
-            <SidebarItem icon="science" label="Pure Components" active={activeModule === 'pure'} onClick={() => setActiveModule('pure')} />
-            <SidebarItem icon="gas_meter" label="Mixed Gas" active={activeModule === 'natural-gas'} onClick={() => setActiveModule('natural-gas')} />
+      {/* Navigation */}
+      <aside className="hidden lg:flex flex-col w-80 bg-white border-r border-slate-200 fixed top-20 h-[calc(100vh-5rem)] z-40 p-6">
+        <nav className="flex-1 space-y-10">
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] px-2">Analysis Engine</label>
+            <div className="space-y-2">
+                <SidebarItem icon="analytics" label="Pure Component" active={activeModule === 'pure'} onClick={() => setActiveModule('pure')} />
+                <SidebarItem icon="hub" label="Mixed Gas" active={activeModule === 'natural-gas'} onClick={() => setActiveModule('natural-gas')} />
+            </div>
           </div>
           
-          <div className="pt-6 border-t border-outline-variant/30 space-y-6">
-            <div className="px-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Unit Controls</label>
-              <div className="space-y-4">
+          <div className="pt-8 border-t border-slate-100 space-y-8">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] px-2">Unit Configuration</label>
+              <div className="space-y-6 px-2">
                 <div className="space-y-3">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pressure</span>
                   <div className="grid grid-cols-4 bg-slate-100 p-1.5 rounded-2xl">
@@ -170,138 +182,189 @@ const App = () => {
                   </div>
                 </div>
               </div>
-            </div>
           </div>
         </nav>
       </aside>
 
-      <main className="lg:pl-72 pt-16 min-h-screen flex-1 p-10">
-        <div className="max-w-[1600px] mx-auto space-y-12 mt-20">
-          <div className="grid grid-cols-12 gap-10">
-            <div className="col-span-12 lg:col-span-4 space-y-8 animate-fade-in">
-              <section className="glass-card p-8 bg-white rounded-[32px] shadow-xl shadow-black/5">
-                <div className="space-y-8">
-                  {activeModule === 'natural-gas' ? (
-                    <div className="space-y-5 p-6 bg-slate-50 rounded-[24px] border border-slate-200 transition-all hover:bg-white hover:shadow-xl hover:shadow-black/5">
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[18px] text-primary">biotech</span>
-                          <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Mixture Composition</label>
-                        </div>
-                        <button onClick={normalizeComposition} className="bg-primary text-white py-1.5 px-3 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all">Normalize</button>
-                      </div>
-                      <div className="space-y-4">
-                        {Object.keys(composition).map(k => (
-                          <div key={k} className="flex justify-between items-center group">
-                            <span className="text-[11px] font-black capitalize text-slate-500 group-hover:text-primary transition-colors">{k}</span>
-                            <div className="flex items-center gap-2">
-                                <input 
-                                  type="number" 
-                                  step="0.001" 
-                                  value={composition[k]} 
-                                  onChange={e => setComposition({...composition, [k]: parseFloat(e.target.value) || 0})} 
-                                  className="w-24 text-right font-mono-data text-xs bg-white border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
-                                />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
-                        <span className="text-[10px] font-black uppercase opacity-40 tracking-widest">Total Fraction</span>
-                        <span className={`text-xs font-black px-2 py-1 rounded-lg ${Math.abs(totalFraction - 1) > 0.001 ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-600'}`}>
-                          {totalFraction.toFixed(4)}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Target Fluid</label>
-                      <select value={component} onChange={e => setComponent(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold shadow-sm outline-none focus:border-primary transition-all">
-                        {Object.keys(COMPONENTS).map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-                      </select>
-                    </div>
-                  )}
+      {/* Main Content */}
+      <main className="lg:pl-80 pt-20 min-h-screen flex-1 p-12 overflow-x-hidden">
+        <div className="max-w-[1400px] mx-auto mt-16 space-y-16">
+          
+          {/* Hero Header */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex justify-between items-end border-b border-slate-200 pb-12 overflow-visible"
+          >
+            <div>
+              <h1 className="text-5xl font-black tracking-tighter text-slate-900 uppercase font-display mb-6 leading-none">
+                {activeModule === 'pure' ? 'Fluid Characterization' : 'Mixture Intelligence'}
+              </h1>
+              <div className="flex items-center gap-4">
+                <div className="px-3 py-1 bg-primary/5 border border-primary/10 rounded-full">
+                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">Active Model: {eos.toUpperCase()}</span>
+                </div>
+                <p className="text-slate-400 text-sm font-medium italic">
+                  Simulating <span className="text-slate-900 font-bold not-italic">{activeModule === 'pure' ? component.toUpperCase() : 'GAS MIXTURE'}</span> phase behavior
+                </p>
+              </div>
+            </div>
+          </motion.div>
 
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Temp ({tUnit})</label>
-                      <input type="number" value={convertT(temperature).toFixed(2)} onChange={e => setTemperature(toKelvin(parseFloat(e.target.value) || 0))} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold shadow-sm outline-none focus:border-primary transition-all font-mono-data" />
+          <div className="grid grid-cols-12 gap-12">
+            {/* Control Panel */}
+            <div className="col-span-12 lg:col-span-4 space-y-10">
+              <motion.section 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="glass-card p-10 rounded-[40px] shadow-2xl"
+              >
+                <div className="space-y-10">
+                  <AnimatePresence mode="wait">
+                    {activeModule === 'natural-gas' ? (
+                      <motion.div 
+                        key="mixed"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        className="space-y-6 p-8 bg-slate-50 rounded-[32px] border border-slate-200 shadow-inner"
+                      >
+                        <div className="flex justify-between items-center mb-2">
+                           <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Gas Composition</span>
+                           <button onClick={normalizeComposition} className="btn-primary py-1.5 px-4 text-[9px] rounded-full">Normalize</button>
+                        </div>
+                        <div className="space-y-4">
+                          {Object.keys(composition).map(k => (
+                            <div key={k} className="flex justify-between items-center group">
+                              <span className="text-[11px] font-black capitalize text-slate-500 group-hover:text-primary transition-colors">{k}</span>
+                              <input 
+                                type="number" 
+                                value={composition[k]} 
+                                onChange={e => setComposition({...composition, [k]: parseFloat(e.target.value) || 0})} 
+                                className="w-24 text-right font-mono-data text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-primary shadow-sm"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="pt-6 border-t border-slate-200 flex justify-between items-center">
+                          <span className="text-[10px] font-black uppercase opacity-40">Mole Fraction Sum</span>
+                          <span className={`text-xs font-black px-3 py-1.5 rounded-full ${Math.abs(totalFraction - 1) > 0.001 ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'}`}>
+                            {totalFraction.toFixed(4)}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div 
+                        key="pure"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        className="space-y-4"
+                      >
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] px-2">Target Fluid</label>
+                        <select value={component} onChange={e => setComponent(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-6 py-5 text-sm font-black shadow-inner outline-none focus:border-primary transition-all appearance-none cursor-pointer">
+                          {Object.keys(COMPONENTS).map(c => <option key={c} value={c}>{c.toUpperCase()}</option>)}
+                        </select>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="grid grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] px-2">Temp ({tUnit})</label>
+                      <input type="number" value={convertT(temperature).toFixed(2)} onChange={e => setTemperature(toKelvin(parseFloat(e.target.value) || 0))} className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-6 py-5 text-sm font-black shadow-inner outline-none focus:border-primary font-mono-data" />
                     </div>
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Max P ({pUnit})</label>
-                      <input type="number" value={convertP(maxPressure).toFixed(2)} onChange={e => setMaxPressure(toBara(parseFloat(e.target.value) || 0))} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold shadow-sm outline-none focus:border-primary transition-all font-mono-data" />
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] px-2">Max P ({pUnit})</label>
+                      <input type="number" value={convertP(maxPressure).toFixed(2)} onChange={e => setMaxPressure(toBara(parseFloat(e.target.value) || 0))} className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-6 py-5 text-sm font-black shadow-inner outline-none focus:border-primary font-mono-data" />
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-slate-200 space-y-4">
-                    <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] block">Equation Model</label>
-                    <select 
-                      value={eos} 
-                      onChange={(e) => setEos(e.target.value)}
-                      className="w-full bg-white border-2 border-black rounded-xl px-4 py-3 text-sm font-bold transition-all outline-none focus:border-primary"
-                    >
-                      <optgroup label="Standard Models">
-                        <option value="srk">SRK</option>
-                        <option value="pr">PR</option>
-                        <option value="rk">RK Classic</option>
-                        <option value="pr78">PR-1978</option>
-                      </optgroup>
-                      <optgroup label="Advanced Models">
-                        <option value="pr-mc">Mathias-Copeman</option>
-                        <option value="pr-tc">Twu-Coon</option>
-                      </optgroup>
-                      <optgroup label="Molecular-Based">
-                        <option value="pc-saft">PC-SAFT</option>
-                        <option value="cpa-srk">CPA-SRK</option>
-                      </optgroup>
+                  <div className="pt-10 border-t border-slate-100 space-y-4">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] px-2">Thermodynamic Model</label>
+                    <select value={eos} onChange={e => setEos(e.target.value)} className="w-full bg-slate-900 text-white rounded-3xl px-6 py-5 text-sm font-black shadow-2xl outline-none hover:bg-primary transition-all cursor-pointer">
+                        <optgroup label="Cubic Models" className="bg-white text-slate-900">
+                          <option value="srk">SRK Standard</option>
+                          <option value="pr">PR Standard</option>
+                          <option value="rk">RK Classic</option>
+                        </optgroup>
+                        <optgroup label="Molecular/Association" className="bg-white text-slate-900">
+                          <option value="pc-saft">PC-SAFT (High Precision)</option>
+                          <option value="cpa-srk">CPA (Polar Mixing)</option>
+                        </optgroup>
+                        <optgroup label="Advanced Alpha" className="bg-white text-slate-900">
+                          <option value="pr-mc">PR Mathias-Copeman</option>
+                          <option value="pr-tc">PR Twu-Coon</option>
+                        </optgroup>
                     </select>
                   </div>
                 </div>
-              </section>
+              </motion.section>
             </div>
 
-            <div className="col-span-12 lg:col-span-8 space-y-10 animate-fade-in">
+            {/* Results Canvas */}
+            <div className="col-span-12 lg:col-span-8 space-y-12">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <StatCard label="Real Density" value={current.real} unit={dUnit} colorClass="border-t-primary" delay={300} />
-                <StatCard label="Z-Factor" value={current.z} colorClass="border-t-emerald-600" delay={400} />
-                <StatCard label="Ideal Reference" value={current.ideal} unit={dUnit} colorClass="border-t-amber-600" delay={500} />
+                <StatCard label="Real Density" value={current.real} unit={dUnit} colorClass="border-t-primary" icon="compress" delay={0.2} />
+                <StatCard label="Z-Factor" value={current.z} colorClass="border-t-emerald-500" icon="straighten" delay={0.3} />
+                <StatCard label="Ideal Density" value={current.ideal} unit={dUnit} colorClass="border-t-amber-500" icon="bubble_chart" delay={0.4} />
               </div>
 
-              <div className="glass-card p-10 bg-white rounded-[40px] shadow-2xl shadow-black/5">
-                <div className="grid grid-cols-1 gap-16">
-                  {/* Density Chart */}
-                  <div className="h-[350px] w-full group">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-8 group-hover:text-primary transition-colors">Density Characterization</h3>
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 1 }}
+                className="glass-card p-12 rounded-[48px] shadow-2xl relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
+                
+                <div className="grid grid-cols-1 gap-20 relative z-10">
+                  <div className="h-[400px] w-full">
+                    <div className="flex justify-between items-center mb-10">
+                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">Density Profile Characterization</h3>
+                        <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-primary rounded-full" />
+                                <span className="text-[10px] font-black uppercase text-slate-500">Real Fluid</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 border-2 border-slate-900 rounded-full" />
+                                <span className="text-[10px] font-black uppercase text-slate-500">Ideal Reference</span>
+                            </div>
+                        </div>
+                    </div>
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={data}>
                         <defs>
-                          <linearGradient id="colorReal" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2}/><stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/></linearGradient>
+                          <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                          </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                        <XAxis dataKey="pressure" stroke="#000000" fontSize={11} tickLine={true} axisLine={true} label={{ value: `Pressure (${pUnit})`, position: 'insideBottom', offset: -10, fill: '#000000', fontSize: 12, fontWeight: 800 }} />
-                        <YAxis stroke="#000000" fontSize={11} tickLine={true} axisLine={true} label={{ value: `Density (${dUnit})`, angle: -90, position: 'insideLeft', offset: 15, fill: '#000000', fontSize: 12, fontWeight: 800 }} />
-                        <Tooltip contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', border: '2px solid #000', borderRadius: '12px', color: '#000' }} />
-                        <Area type="monotone" dataKey="real" stroke="var(--primary)" fill="url(#colorReal)" strokeWidth={4} />
-                        <Area type="monotone" dataKey="ideal" stroke="#000000" fill="transparent" strokeDasharray="8 8" strokeWidth={2} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="pressure" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} label={{ value: `Pressure (${pUnit})`, position: 'insideBottom', offset: -15, fill: '#64748b', fontSize: 11, fontWeight: 700 }} />
+                        <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} label={{ value: `Density (${dUnit})`, angle: -90, position: 'insideLeft', offset: 10, fill: '#64748b', fontSize: 11, fontWeight: 700 }} />
+                        <Tooltip cursor={{ stroke: 'var(--primary)', strokeWidth: 1 }} contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', border: 'none', borderRadius: '24px', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', color: '#000', fontSize: '12px', fontWeight: '800', padding: '16px' }} />
+                        <Area type="monotone" dataKey="real" stroke="var(--primary)" strokeWidth={5} fill="url(#chartGradient)" />
+                        <Area type="monotone" dataKey="ideal" stroke="#1b1b1f" strokeWidth={2} strokeDasharray="10 10" fill="transparent" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
 
-                  {/* Z-Factor Chart */}
-                  <div className="h-[350px] w-full group">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-8 group-hover:text-emerald-600 transition-colors">Compressibility (Z) Factor</h3>
+                  <div className="h-[300px] w-full pt-12 border-t border-slate-100">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-10">Compressibility Factor (Z)</h3>
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={data}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                        <XAxis dataKey="pressure" stroke="#000000" fontSize={11} tickLine={true} axisLine={true} label={{ value: `Pressure (${pUnit})`, position: 'insideBottom', offset: -10, fill: '#000000', fontSize: 12, fontWeight: 800 }} />
-                        <YAxis stroke="#000000" fontSize={11} tickLine={true} axisLine={true} domain={['auto', 'auto']} label={{ value: 'Z-Factor', angle: -90, position: 'insideLeft', offset: 15, fill: '#000000', fontSize: 12, fontWeight: 800 }} />
-                        <Tooltip contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', border: '2px solid #000', borderRadius: '12px', color: '#000' }} />
-                        <Line type="monotone" dataKey="z" stroke="#059669" strokeWidth={4} dot={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="pressure" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
+                        <Tooltip cursor={{ stroke: '#059669', strokeWidth: 1 }} contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', border: 'none', borderRadius: '24px', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', padding: '16px' }} />
+                        <Line type="monotone" dataKey="z" stroke="#059669" strokeWidth={5} dot={false} animationDuration={2000} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
