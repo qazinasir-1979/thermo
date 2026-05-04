@@ -198,7 +198,7 @@ const App = () => {
           >
             <div>
               <h1 className="text-5xl font-black tracking-tighter text-slate-900 uppercase font-display mb-6 leading-none">
-                {activeModule === 'pure' ? 'Fluid Characterization' : 'Mixture Intelligence'}
+                {activeModule === 'pure' ? 'Pure Components' : 'Mixed Gas'}
               </h1>
               <div className="flex items-center gap-4">
                 <div className="px-3 py-1 bg-primary/5 border border-primary/10 rounded-full">
